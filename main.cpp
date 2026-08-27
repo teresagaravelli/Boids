@@ -539,6 +539,7 @@ int main()
 }*/
 
 // MAIN + GRAFICA + DATI RAGGRUPPATI IN BIN
+// MAIN + GRAFICA + DATI RAGGRUPPATI IN BIN
 
 #include "Predator.hpp"
 #include "ToroidalSpace.hpp"
@@ -757,10 +758,7 @@ int main()
   initial_boids.reserve(
       static_cast<std::size_t>(number_boids));
 
-  for (int i = 0;
-       i < number_boids;
-       ++i) {
-
+  for (int i = 0; i < number_boids; ++i) {
     boids::Vector3 position{
         random_boid_x(generator),
         random_boid_y(generator),
@@ -789,10 +787,7 @@ int main()
   initial_predators.reserve(
       static_cast<std::size_t>(number_predators));
 
-  for (int i = 0;
-       i < number_predators;
-       ++i) {
-
+  for (int i = 0; i < number_predators; ++i) {
     boids::Vector3 position{
         random_predator_x(generator),
         random_predator_y(generator),
@@ -870,33 +865,28 @@ int main()
     return 1;
   }
 
-  // DEFINIZIONE DEI BIN DELLE VELOCITÀ
+  // DEFINIZIONE DEI BIN
 
-  // Intervalli:
-  // 0-2.5, 2.5-5, ..., 47.5-50.
-  double const velocity_bin_width{2.5};
+  // Velocità:
+  // 0-5, 5-10, ..., 45-50.
+  double const velocity_bin_width{5.};
+  double const maximum_velocity{50.};
 
   std::size_t const velocity_bin_count =
       static_cast<std::size_t>(
           std::ceil(
-              max_speed / velocity_bin_width));
+              maximum_velocity
+              / velocity_bin_width));
 
-  // DEFINIZIONE DEI BIN DELLE DISTANZE
-
-  double const maximum_possible_distance =
-      std::sqrt(
-          std::pow(space.Lx() / 2., 2.)
-          + std::pow(space.Ly() / 2., 2.)
-          + std::pow(space.Lz() / 2., 2.));
-
-  // Intervalli:
-  // 0-25, 25-50, ..., 850-875.
-  double const distance_bin_width{25.};
+  // Distanze:
+  // 0-75, 75-150, ..., 900-975, 975-1000.
+  double const distance_bin_width{75.};
+  double const maximum_distance{1000.};
 
   std::size_t const distance_bin_count =
       static_cast<std::size_t>(
           std::ceil(
-              maximum_possible_distance
+              maximum_distance
               / distance_bin_width));
 
   // INTESTAZIONE DEL FILE DELLE VELOCITÀ
@@ -915,8 +905,12 @@ int main()
         static_cast<double>(bin)
         * velocity_bin_width;
 
-    double const upper =
+    double upper =
         lower + velocity_bin_width;
+
+    if (upper > maximum_velocity) {
+      upper = maximum_velocity;
+    }
 
     velocity_file
         << ",velocity_group_"
@@ -945,8 +939,14 @@ int main()
         static_cast<double>(bin)
         * distance_bin_width;
 
-    double const upper =
+    double upper =
         lower + distance_bin_width;
+
+    // L'ultimo intervallo termina esattamente a 1000:
+    // 975-1000.
+    if (upper > maximum_distance) {
+      upper = maximum_distance;
+    }
 
     distance_file
         << ",distance_group_"
@@ -985,12 +985,10 @@ int main()
 
   int step{0};
 
-  // Dati raggruppati ogni 100 passi:
-  // 100 * 0.05 = 5 secondi.
+  // Dati raggruppati ogni 5 secondi.
   int const individual_data_save_period{100};
 
-  // Statistiche generali ogni 10 passi:
-  // 10 * 0.05 = 0.5 secondi.
+  // Statistiche generali ogni 0.5 secondi.
   int const statistics_save_period{10};
 
   while (renderer.is_open() && step <= steps) {
@@ -1023,16 +1021,13 @@ int main()
             static_cast<std::size_t>(
                 velocity / velocity_bin_width);
 
-        // Include max_speed nell'ultimo gruppo.
+        // Include velocity = 50 nell'ultimo bin.
         if (bin >= velocity_bin_count) {
           bin = velocity_bin_count - 1;
         }
 
         ++velocity_counts[bin];
       }
-
-      // Colonne:
-      // time, velocity_group_1, velocity_group_2, ...
 
       velocity_file << time;
 
@@ -1070,6 +1065,8 @@ int main()
               static_cast<std::size_t>(
                   distance / distance_bin_width);
 
+          // Eventuali valori pari o superiori a 1000
+          // vengono inseriti nell'ultimo gruppo.
           if (bin >= distance_bin_count) {
             bin = distance_bin_count - 1;
           }
@@ -1077,9 +1074,6 @@ int main()
           ++distance_counts[bin];
         }
       }
-
-      // Colonne:
-      // time, distance_group_1, distance_group_2, ...
 
       distance_file << time;
 
