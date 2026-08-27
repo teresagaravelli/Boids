@@ -1,4 +1,4 @@
-/*MAIN MASSIMO 
+/*MAIN MASSIMO
 #include "Predator.hpp"
 #include "ToroidalSpace.hpp"
 #include "flock.hpp"
@@ -59,8 +59,9 @@ int main()
   }
 
   for (std::size_t i = 0; i <= 3; ++i) {
-    if (number_boids >= 2 && steps >0 && ds > 0 && d > 0 && s > 0 && a > 0 && c > 0 && ds < 0.3*d) {
-        break; // se va tutto bene il ciclo si interrompe e il programma prosegue
+    if (number_boids >= 2 && steps >0 && ds > 0 && d > 0 && s > 0 && a > 0 && c
+> 0 && ds < 0.3*d) { break; // se va tutto bene il ciclo si interrompe e il
+programma prosegue
     }
     if (i == 3) {
       std::cerr << "Error: too many attempts.\n";
@@ -156,7 +157,7 @@ int main()
         random_velocity_boid(
             generator)}; // Evita che la velocita iniziale superi max_speed
     initial_boids.emplace_back(position, velocity, 2.0 * M_PI,
-                               max_speed, space); 
+                               max_speed, space);
   }
 
   for (int i = 0; i < number_predators; ++i) {
@@ -170,7 +171,8 @@ int main()
         random_velocity_predator(
             generator)}; // Evita che la velocita iniziale superi max_speed
     initial_predators.emplace_back(position, velocity, 4.0 * M_PI / 9.0,
-                                   true, space); // serve ad aggiungere i piccioni al
+                                   true, space); // serve ad aggiungere i
+piccioni al
                                           // vettore di piccioni da sinistra(?)
   }
 
@@ -209,9 +211,7 @@ int main()
   return 0;
 }*/
 
-
-
-/*MAIN MASSIMO + GRAFICA 
+/*MAIN MASSIMO + GRAFICA
 #include "Predator.hpp"
 #include "ToroidalSpace.hpp"
 #include "flock.hpp"
@@ -538,7 +538,8 @@ int main()
   return 0;
 }*/
 
-//MAIN MASSIMO+GRAFICA+FILES
+// MAIN + GRAFICA + DATI RAGGRUPPATI IN BIN
+
 #include "Predator.hpp"
 #include "ToroidalSpace.hpp"
 #include "flock.hpp"
@@ -563,14 +564,20 @@ int main()
   double a{};
   double c{};
 
-  double max_speed{50};
+  double max_speed{50.};
 
-  boids::ToroidalSpace space{1000., 1000., 1000.};
+  boids::ToroidalSpace space{
+      1000.,
+      1000.,
+      1000.
+  };
 
   double dt{0.05};
   int steps{};
 
-  std::cout << "Boids'number: ";
+  // LETTURA DEGLI INPUT
+
+  std::cout << "Boids' number: ";
   std::cin >> number_boids;
 
   std::cout << "Predators' number: ";
@@ -585,36 +592,44 @@ int main()
   std::cout << "Separation factor (0 < s): ";
   std::cin >> s;
 
-  std::cout << "Alignement factor a (0 < a): ";
+  std::cout << "Alignment factor (0 < a): ";
   std::cin >> a;
 
-  std::cout << "Cohesion factor c (0 < c): ";
+  std::cout << "Cohesion factor (0 < c): ";
   std::cin >> c;
 
   std::cout << "Numero di passi temporali: ";
   std::cin >> steps;
 
-  // CONTROLLO INPUT
+  // CONTROLLO INIZIALE DELL'INPUT
 
   if (std::cin.fail()) {
     std::cerr << "Error: invalid input.\n";
     return 1;
   }
 
-  for (std::size_t i = 0; i <= 3; ++i) {
-    if (number_boids >= 2
-        && steps > 0
-        && ds > 0
-        && d > 0
-        && s > 0
-        && a > 0
-        && c > 0
-        && ds < 0.3 * d) {
+  // CONTROLLO DEI PARAMETRI
 
+  for (std::size_t attempt = 0;
+       attempt <= 3;
+       ++attempt) {
+
+    bool const valid_input =
+        number_boids >= 2
+        && number_predators >= 0
+        && steps > 0
+        && d > 0.
+        && ds > 0.
+        && ds < 0.3 * d
+        && s > 0.
+        && a > 0.
+        && c > 0.;
+
+    if (valid_input) {
       break;
     }
 
-    if (i == 3) {
+    if (attempt == 3) {
       std::cerr << "Error: too many attempts.\n";
       return 1;
     }
@@ -627,6 +642,14 @@ int main()
       std::cin >> number_boids;
     }
 
+    if (number_predators < 0) {
+      std::cout
+          << "Error, the number of predators cannot be negative, "
+          << "insert the parameter again: ";
+
+      std::cin >> number_predators;
+    }
+
     if (d <= 0.) {
       std::cout
           << "Error, d must be greater than 0, "
@@ -635,9 +658,10 @@ int main()
       std::cin >> d;
     }
 
-    if (ds <= 0. || ds > 0.3 * d) {
+    if (ds <= 0. || ds >= 0.3 * d) {
       std::cout
-          << "Error, ds must be greater than 0 and way lower than d, "
+          << "Error, ds must be greater than 0 and "
+          << "lower than 0.3 * d, "
           << "insert the parameter again: ";
 
       std::cin >> ds;
@@ -673,6 +697,11 @@ int main()
           << "insert the parameter again: ";
 
       std::cin >> steps;
+    }
+
+    if (std::cin.fail()) {
+      std::cerr << "Error: invalid input.\n";
+      return 1;
     }
   }
 
@@ -717,8 +746,8 @@ int main()
   };
 
   std::uniform_real_distribution<double> random_velocity_predator{
-      -75 / std::sqrt(3.),
-      75 / std::sqrt(3.)
+      -75. / std::sqrt(3.),
+      75. / std::sqrt(3.)
   };
 
   // CREAZIONE DEI BOIDS
@@ -728,12 +757,10 @@ int main()
   initial_boids.reserve(
       static_cast<std::size_t>(number_boids));
 
-  std::vector<boids::Predator> initial_predators;
+  for (int i = 0;
+       i < number_boids;
+       ++i) {
 
-  initial_predators.reserve(
-      static_cast<std::size_t>(number_predators));
-
-  for (int i = 0; i < number_boids; ++i) {
     boids::Vector3 position{
         random_boid_x(generator),
         random_boid_y(generator),
@@ -749,7 +776,7 @@ int main()
     initial_boids.emplace_back(
         position,
         velocity,
-        2.0 * M_PI/3,
+        2.0 * M_PI / 3.0,
         max_speed,
         space
     );
@@ -757,7 +784,15 @@ int main()
 
   // CREAZIONE DEI PREDATORI
 
-  for (int i = 0; i < number_predators; ++i) {
+  std::vector<boids::Predator> initial_predators;
+
+  initial_predators.reserve(
+      static_cast<std::size_t>(number_predators));
+
+  for (int i = 0;
+       i < number_predators;
+       ++i) {
+
     boids::Vector3 position{
         random_predator_x(generator),
         random_predator_y(generator),
@@ -797,7 +832,148 @@ int main()
       space
   };
 
-  // CREAZIONE DELLE DUE FINESTRE GRAFICHE
+  // APERTURA DEI FILE CSV
+
+  std::ofstream velocity_file{
+      "velocities.csv",
+      std::ios::out | std::ios::trunc
+  };
+
+  std::ofstream distance_file{
+      "distances.csv",
+      std::ios::out | std::ios::trunc
+  };
+
+  std::ofstream statistics_file{
+      "general_statistics.csv",
+      std::ios::out | std::ios::trunc
+  };
+
+  if (!velocity_file.is_open()) {
+    std::cerr
+        << "Error: unable to open velocities.csv\n";
+
+    return 1;
+  }
+
+  if (!distance_file.is_open()) {
+    std::cerr
+        << "Error: unable to open distances.csv\n";
+
+    return 1;
+  }
+
+  if (!statistics_file.is_open()) {
+    std::cerr
+        << "Error: unable to open general_statistics.csv\n";
+
+    return 1;
+  }
+
+  // DEFINIZIONE DEI BIN DELLE VELOCITÀ
+
+  // Intervalli:
+  // 0-2.5, 2.5-5, ..., 47.5-50.
+  double const velocity_bin_width{2.5};
+
+  std::size_t const velocity_bin_count =
+      static_cast<std::size_t>(
+          std::ceil(
+              max_speed / velocity_bin_width));
+
+  // DEFINIZIONE DEI BIN DELLE DISTANZE
+
+  double const maximum_possible_distance =
+      std::sqrt(
+          std::pow(space.Lx() / 2., 2.)
+          + std::pow(space.Ly() / 2., 2.)
+          + std::pow(space.Lz() / 2., 2.));
+
+  // Intervalli:
+  // 0-25, 25-50, ..., 850-875.
+  double const distance_bin_width{25.};
+
+  std::size_t const distance_bin_count =
+      static_cast<std::size_t>(
+          std::ceil(
+              maximum_possible_distance
+              / distance_bin_width));
+
+  // INTESTAZIONE DEL FILE DELLE VELOCITÀ
+
+  velocity_file
+      << std::fixed
+      << std::setprecision(2);
+
+  velocity_file << "time";
+
+  for (std::size_t bin = 0;
+       bin < velocity_bin_count;
+       ++bin) {
+
+    double const lower =
+        static_cast<double>(bin)
+        * velocity_bin_width;
+
+    double const upper =
+        lower + velocity_bin_width;
+
+    velocity_file
+        << ",velocity_group_"
+        << bin + 1
+        << "_"
+        << lower
+        << "_"
+        << upper;
+  }
+
+  velocity_file << '\n';
+
+  // INTESTAZIONE DEL FILE DELLE DISTANZE
+
+  distance_file
+      << std::fixed
+      << std::setprecision(2);
+
+  distance_file << "time";
+
+  for (std::size_t bin = 0;
+       bin < distance_bin_count;
+       ++bin) {
+
+    double const lower =
+        static_cast<double>(bin)
+        * distance_bin_width;
+
+    double const upper =
+        lower + distance_bin_width;
+
+    distance_file
+        << ",distance_group_"
+        << bin + 1
+        << "_"
+        << lower
+        << "_"
+        << upper;
+  }
+
+  distance_file << '\n';
+
+  // INTESTAZIONE DELLE STATISTICHE GENERALI
+
+  statistics_file
+      << std::fixed
+      << std::setprecision(6);
+
+  statistics_file
+      << "Time,"
+      << "Mean distance,"
+      << "Std deviation of distance,"
+      << "Mean speed,"
+      << "Std deviation of speed,"
+      << "Alive boids\n";
+
+  // CREAZIONE DELLE FINESTRE GRAFICHE
 
   boids::Renderer renderer{
       space.Lx(),
@@ -805,142 +981,175 @@ int main()
       space.Lz()
   };
 
-  // APERTURA DEI FILE CSV
-
-  // velocities.csv conterrà due colonne:
-  // time e modulo della velocità.
-  std::ofstream velocity_file{
-      "velocities.csv",
-      std::ios::out | std::ios::trunc
-  };
-
-  // distances.csv conterrà due colonne:
-  // time e distanza reciproca.
-  std::ofstream distance_file{
-      "distances.csv",
-      std::ios::out | std::ios::trunc
-  };
-
-  if (!velocity_file.is_open()) {
-    std::cerr << "Error: unable to open velocities.csv\n";
-    return 1;
-  }
-
-  if (!distance_file.is_open()) {
-    std::cerr << "Error: unable to open distances.csv\n";
-    return 1;
-  }
-
-  velocity_file
-      << std::fixed
-      << std::setprecision(6);
-
-  distance_file
-      << std::fixed
-      << std::setprecision(6);
-
-  velocity_file << "time,velocity\n";
-  distance_file << "time,distance\n";
-
-  // SIMULAZIONE
-
-  std::cout
-      << std::fixed
-      << std::setprecision(4);
-
-  std::cout << "\n";
-
-  std::cout
-      << "Time: "
-      << "Mean distance: "
-      << "Std deviation of distance: "
-      << "Mean speed: "
-      << "Std deviation of speed:"
-      << " Alive boids:\n";
+  // CICLO DELLA SIMULAZIONE
 
   int step{0};
 
-  // Con dt = 0.05, 100 passi corrispondono
-  // a 5 secondi simulati.
-  int const data_save_period{100};
+  // Dati raggruppati ogni 100 passi:
+  // 100 * 0.05 = 5 secondi.
+  int const individual_data_save_period{100};
+
+  // Statistiche generali ogni 10 passi:
+  // 10 * 0.05 = 0.5 secondi.
+  int const statistics_save_period{10};
 
   while (renderer.is_open() && step <= steps) {
-  renderer.process_events();
+    renderer.process_events();
 
-  if (!renderer.is_open()) {
-    break;
-  }
-
-  double const time =
-      static_cast<double>(step) * dt;
-
-  // Solo il salvataggio è condizionato.
-  if (step % data_save_period == 0) {
-    std::vector<boids::Boid> const& current_boids =
-        flock.boids();
-
-    // Salvataggio velocità.
-    for (std::size_t i = 0;
-         i < current_boids.size();
-         ++i) {
-
-      double const velocity =
-          boids::norm(current_boids[i].velocity());
-
-      velocity_file
-          << time << ','
-          << velocity << '\n';
+    if (!renderer.is_open()) {
+      break;
     }
 
-    // Salvataggio distanze.
-    for (std::size_t i = 0;
-         i < current_boids.size();
-         ++i) {
+    double const time =
+        static_cast<double>(step) * dt;
 
-      for (std::size_t j = i + 1;
-           j < current_boids.size();
-           ++j) {
+    // DATI RAGGRUPPATI OGNI 5 SECONDI
 
-        boids::Vector3 const displacement =
-            space.toroidal_displacement(
-                current_boids[i].position(),
-                current_boids[j].position());
+    if (step % individual_data_save_period == 0) {
+      std::vector<boids::Boid> const& current_boids =
+          flock.boids();
 
-        double const distance =
-            boids::norm(displacement);
+      // GRUPPI DELLE VELOCITÀ
 
-        distance_file
-            << time << ','
-            << distance << '\n';
+      std::vector<std::size_t> velocity_counts(
+          velocity_bin_count,
+          0);
+
+      for (boids::Boid const& boid : current_boids) {
+        double const velocity =
+            boids::norm(boid.velocity());
+
+        std::size_t bin =
+            static_cast<std::size_t>(
+                velocity / velocity_bin_width);
+
+        // Include max_speed nell'ultimo gruppo.
+        if (bin >= velocity_bin_count) {
+          bin = velocity_bin_count - 1;
+        }
+
+        ++velocity_counts[bin];
       }
+
+      // Colonne:
+      // time, velocity_group_1, velocity_group_2, ...
+
+      velocity_file << time;
+
+      for (std::size_t const count : velocity_counts) {
+        velocity_file
+            << ','
+            << count;
+      }
+
+      velocity_file << '\n';
+
+      // GRUPPI DELLE DISTANZE
+
+      std::vector<std::size_t> distance_counts(
+          distance_bin_count,
+          0);
+
+      for (std::size_t i = 0;
+           i < current_boids.size();
+           ++i) {
+
+        for (std::size_t j = i + 1;
+             j < current_boids.size();
+             ++j) {
+
+          boids::Vector3 const displacement =
+              space.toroidal_displacement(
+                  current_boids[i].position(),
+                  current_boids[j].position());
+
+          double const distance =
+              boids::norm(displacement);
+
+          std::size_t bin =
+              static_cast<std::size_t>(
+                  distance / distance_bin_width);
+
+          if (bin >= distance_bin_count) {
+            bin = distance_bin_count - 1;
+          }
+
+          ++distance_counts[bin];
+        }
+      }
+
+      // Colonne:
+      // time, distance_group_1, distance_group_2, ...
+
+      distance_file << time;
+
+      for (std::size_t const count : distance_counts) {
+        distance_file
+            << ','
+            << count;
+      }
+
+      distance_file << '\n';
     }
-  } // Qui deve terminare l'if del salvataggio.
 
-  // Il disegno avviene a ogni passo.
-  renderer.draw(
-      flock,
-      Wild.predators()
-  );
+    // STATISTICHE GENERALI OGNI 0.5 SECONDI
 
-  // Anche l'aggiornamento deve avvenire a ogni passo,
-  // quindi deve stare fuori dall'if precedente.
-  if (step < steps) {
-    Wild.update_all(dt);
+    if (step % statistics_save_period == 0) {
+      statistics_file
+          << time << ','
+          << flock.mean_distance() << ','
+          << flock.distance_stddev() << ','
+          << flock.mean_speed() << ','
+          << flock.speed_stddev() << ','
+          << flock.boids().size() << '\n';
+    }
+
+    // DISEGNO DELLA SIMULAZIONE
+
+    renderer.draw(
+        flock,
+        Wild.predators()
+    );
+
+    // AGGIORNAMENTO DELLA SIMULAZIONE
+
+    if (step < steps) {
+      Wild.update_all(dt);
+    }
+
+    ++step;
   }
 
-  // Anche questo deve stare fuori dall'if del salvataggio.
-  ++step;
-}
   // CHIUSURA DEI FILE
 
   velocity_file.close();
   distance_file.close();
+  statistics_file.close();
 
   std::cout
-      << "Velocities saved in velocities.csv\n";
+      << "Grouped velocities saved in velocities.csv\n";
 
   std::cout
-      << "Distances saved in distances.csv\n";
+      << "Grouped distances saved in distances.csv\n";
+
+  std::cout
+      << "General statistics saved in "
+      << "general_statistics.csv\n";
+
+  // MANTIENE VISIBILE L'ULTIMO FOTOGRAMMA
+
+  while (renderer.is_open()) {
+    renderer.process_events();
+
+    if (!renderer.is_open()) {
+      break;
+    }
+
+    renderer.draw(
+        flock,
+        Wild.predators()
+    );
+  }
 
   return 0;
 }
